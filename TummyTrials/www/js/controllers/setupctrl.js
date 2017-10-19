@@ -167,34 +167,6 @@ function timesec_of_date(date)
                                    Reminders, LC, Text, SetupData,
                                    StudyFmt, Experiments, Replicator) {
 
-    function advance_heads(text, days)
-    {
-        var trigix = Number(SetupData.trigger || '');
-        var trigger = text.setup3.triggers[trigix].trigger;
-        var msg =
-            text.setup5.advance_reminder_title.replace("{TRIGGER}", trigger);
-        return [ msg ];
-    }
-
-    function advance_bodies(text, days)
-    {
-        var bodies = [];
-        var trigix = Number(SetupData.trigger || '');
-        var trigger = text.setup3.triggers[trigix].trigger;
-        for (var d = days; d > 0; d--) {
-            var msg = text.setup5.advance_reminder_text;
-            msg = msg.replace("{TRIGGER}", trigger.toLowerCase());
-            var when;
-            if (d == 1)
-                when = "tomorrow";
-            else
-                when = "in " + d + " days"
-            msg = msg.replace("{WHEN}", when);
-            bodies.push(msg);
-        }
-        return bodies;
-    }
-
     function reminder_heads(title)
     {
         var heads = [];
@@ -216,12 +188,12 @@ function timesec_of_date(date)
         //
         var bodies = [];
         var duration = Number(SetupData.duration || 0);
-        var trigix = Number(SetupData.trigger || 0);
+        var tix = Number(SetupData.trigger || 0);
 
         var triggerdesc = { phrase_plus: 'embrace trigger',
                             phrase_minus: 'avoid trigger'};
-        if (trigix >= 0 && trigix < text.setup3.triggers.length)
-            triggerdesc = text.setup3.triggers[trigix];
+        if (tix >= 0 && tix < text.setup3.triggers.length)
+            triggerdesc = text.setup3.triggers[tix];
 
         for (var i = 1; i <= duration; i++) {
             var aorb;
@@ -242,8 +214,6 @@ function timesec_of_date(date)
         // If SetupData is complete, the returned object will be fully
         // valid. Otherwise there will be vacant spots.
         //
-        var advance_days = 2; // How many days of advance reminders
-
         var exper = {};
         var sd = new Date(SetupData.startdate);
         sd.setHours(0);
@@ -267,17 +237,10 @@ function timesec_of_date(date)
             for (var i = 0; i < text.setup2.symptoms.length; i++)
                 if (SetupData.symptom[i])
                     exper.symptoms.push(text.setup2.symptoms[i].symptom);
-        var trigix = Number(SetupData.trigger || '');
-        exper.trigger = text.setup3.triggers[trigix].trigger;
+        var tix = Number(SetupData.trigger || '');
+        exper.trigger = text.setup3.triggers[tix].trigger;
 
         exper.remdescrs = [
-            { type: 'advance',
-              runup: advance_days,
-              time: timesec_of_date(SetupData.morning_time),
-              badge: 'pass',
-              heads_lt: advance_heads(text, advance_days),
-              bodies_lt: advance_bodies(text, advance_days)
-            },
             { type: 'morning',
               time: timesec_of_date(SetupData.morning_time),
               badge: 'count',

@@ -97,10 +97,10 @@
         var rand = cur.abstring.split(''); // Array for the randomization of conditions
         var score = null;
         var sym_num = cur.symptoms.length; // number of symptoms being logged
-        var sym_name = null, r_sum_name = null;
-        var sym_sym = [], r_sum_sym = [];
-        var sym_data = {}, r_sum_data = {};
-        var res_all = {}, r_sum_all = {};
+        var sym_name = null;
+        var sym_sym = [];
+        var sym_data = {};
+        var res_all = {};
 
         //Statement summary of the result
         var res_desc = text.results.summary;
@@ -122,7 +122,6 @@
         // iterating over all the symptoms
         for(var a = 0; a < sym_num; a++){
             sym_name = cur.symptoms[a];
-            r_sum_name = cur.symptoms[a];
                 // iterating over all the days of the trial
                 for(var i=0; i < $scope.duration_readable; i++){
                     var day = new Date((cur.start_time + (86400 * i)) * 1000);  //86400 adds 1 day
@@ -131,7 +130,6 @@
                     // d.push(dt);
                     d.push(rand[i]);
                     sym_data["index"] = (i+1);
-                    r_sum_data["index"] = (i+1);
                     if(rand[i] == "A"){
                         sym_data["condition"] = 0;
                     } 
@@ -144,15 +142,13 @@
                         sym_data["note"] = 'No note';
                         sym_data["bcomp"] = "No report";
                         sym_data["lcomp"] = "No report";
-                        sym_data["severity"] = 1; 
+                        sym_data["severity"] = 1;
                         sym_data["real_severity"] = 1;
                         if(rand[i] == "A"){
                             a_void = a_void + 1;
-                            r_sum_data["A"] = 1;
                         }
                         if(rand[i] == "B"){
                             b_void = b_void + 1;
-                            r_sum_data["B"] = 1;
                         }
                     }
                     else {
@@ -192,11 +188,9 @@
                                     sym_data["real_severity"] = score + 2;
                                     if(rand[i] == "A"){
                                         a_avg = a_avg + score;
-                                        r_sum_data["A"] = score + 2;
                                     }
                                     if(rand[i] == "B"){
                                         b_avg = b_avg + score;
-                                        r_sum_data["B"] = score + 2;
                                     }                                 
                                 } else {
                                     // either compliance is false
@@ -205,11 +199,9 @@
                                     sym_data["real_severity"] = score + 2;
                                     if(rand[i] == "A"){
                                         a_void = a_void + 1;
-                                        r_sum_data["A"] = 0;
                                     }
                                     if(rand[i] == "B"){
                                         b_void = b_void + 1;
-                                        r_sum_data["B"] = 0;
                                     }
                                 }
                             } else {
@@ -218,11 +210,9 @@
                                 sym_data["real_severity"] = 1;
                                 if(rand[i] == "A"){
                                     a_void = a_void + 1;
-                                    r_sum_data["A"] = 1;
                                 }
                                 if(rand[i] == "B"){
                                     b_void = b_void + 1;
-                                    r_sum_data["B"] = 1;
                                 } 
                             }
                         }
@@ -254,13 +244,13 @@
                         if(p_val_num <= 0.05){
                             res_desc = res_desc.replace('{EVIDENCE}', 'strong');
                             p_txt = "Strong evidence";
-                        } else if(p_val_num > 0.05 && p_val_num <= 0.10) {
+                        } else if(p_val_num > 0.05 && p_val_num <= 0.15) {
                             res_desc = res_desc.replace('{EVIDENCE}', 'possible');
                             p_txt = "Possible evidence";
-                        } else if(p_val_num > 0.10 && p_val_num <= 0.20){
+                        } else if(p_val_num > 0.15 && p_val_num <= 0.35){
                             res_desc = res_desc.replace('{EVIDENCE}', 'weak');
                             p_txt = "Weak evidence";
-                        } else if(p_val_num > 0.20){
+                        } else if(p_val_num > 0.35){
                             res_desc = res_desc.replace('{EVIDENCE}', 'no');
                             p_txt = "No evidence";
                         }
@@ -281,10 +271,6 @@
                     d = [];
                     score = null;
                     sym_data = {};
-
-                    r_sum_sym.push(r_sum_data);
-                    r_sum_data = {};
-
                     // need to reset the description text since {SYMPTOM} no longer exists after first pass
                     res_desc = text.results.summary;
                 }
@@ -371,13 +357,8 @@
                 sym_sym = [];
                 a_avg = 0; b_avg = 0; a_void = 0; b_void = 0;
 
-                r_sum_all[r_sum_name] = r_sum_sym;
-                r_sum_sym = [];
-
         }
         $scope.visdata = res_all;
-        Vis.r_sum = r_sum_all;
-        console.log(r_sum_all);
 
         $scope.$watch(Vis.view_title, function(newVal, oldVal, scope){
             if(newVal){
@@ -402,6 +383,8 @@
 
             Vis.A_text = A_text;
             Vis.B_text = B_text;
+
+            console.log("neg comp " + Neg_Comp_Data.trigger);
 
         // onclick function for the visualization
         $scope.d3OnClick = function(data_pt){
@@ -441,8 +424,11 @@
             date_trimmed = date_trimmed.replace(' 2016 00:00:00 GMT-0700 (PDT)', '');
             // date_trimmed = date_trimmed.replace(/"/g, '');
 
+
+
+
             // Remove compliances if no report was submitted for the day
-            if(severity_text == "No Report"){
+            if(severity_text == "No report"){
                 $scope.alert_message =  "Date : " + date_trimmed + "<br/>" + 
                                     "Condition : " + cond_text + "<br/>" +
                                     "Symptom Level : " + severity_text + "<br/>" + 
